@@ -30,7 +30,7 @@
 
 
 						<!-- 購買按鈕，未購買商品前,商品購買數量=0 -->
-						<button class="product_add-btn product-card_add-item" v-if="item.quantity===0" @click="addToCard(item)"><img src="https://raw.githubusercontent.com/tina801005/challenge18/3e0dce067d4a713a6b4184e65e9e4a2f7d2260c0/images/icon-add-to-cart.svg">Add to Cart</button>
+						<button class="product_add-btn product-card_add-item" v-if="item.quantity===0" @click="addToCard(item)"><img src="https://raw.githubusercontent.com/tina801005/challenge18/3e0dce067d4a713a6b4184e65e9e4a2f7d2260c0/images/icon-add-to-cart.svg" alt="icon add to cart">Add to Cart</button>
 
 						<!-- 購買按鈕，點擊addtocard後,商品購買數量>0 -->
 						<div v-else class="product_add-btn quantity-ctrl">

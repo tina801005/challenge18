@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" type="text/css" href="./style.css">
+	<link href="https://fonts.googleapis.com/css2?family=Red+Hat+Text:ital,wght@0,300..700;1,300..700&display=swap" rel="stylesheet">
+	<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+	<title>shoppongcart</title>
+	
+</head>
+<body>
+	<main class="container" id="app">
+		<div class="eshop" >
+			<!-- 商品列表 -->
+			<div class="product-list">
+				<!-- 列表標題 -->
+				<h1 class="product-list_title">Desserts</h1>
+
+				<!-- 商品 -->
+				<div class="product-shelf">
+					<div class="product-card" v-for="item in productsdata" :key="item.name">
+
+							<picture class="product-card_image" :class="{ selected: item.quantity > 0 }">
+								<source :srcset="item.image.mobile" media="(max-width: 900px)">
+								<!-- <source :srcset="item.image.tablet" media="(max-width: 900px)">	 -->
+								<img v-bind:src="item.image.desktop" alt="product image" loading="lazy">
+							</picture>
+
+
+						<!-- 購買按鈕，未購買商品前,商品購買數量=0 -->
+						<button class="product_add-btn product-card_add-item" v-if="item.quantity===0" @click="addToCard(item)"><img src="https://raw.githubusercontent.com/tina801005/challenge18/3e0dce067d4a713a6b4184e65e9e4a2f7d2260c0/images/icon-add-to-cart.svg">Add to Cart</button>
+
+						<!-- 購買按鈕，點擊addtocard後,商品購買數量>0 -->
+						<div v-else class="product_add-btn quantity-ctrl">
+							<button @click="minusQty(item)" class="quantity-ctrl_btn minus">
+								<svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 2"><path fill="currentColor" d="M0 .375h10v1.25H0V.375Z"/></svg>
+							</button>
+							<span> {{ item.quantity }} </span>
+							<button @click="addQty(item)" class="quantity-ctrl_btn">
+								<svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><path fill="currentColor" d="M10 4.375H5.625V0h-1.25v4.375H0v1.25h4.375V10h1.25V5.625H10v-1.25Z"/></svg>
+							</button>
+						</div>
+						<div class="product-info">
+							<p class="product-card_category">{{ item.category }}</p>
+							<p class="product-card_name">{{ item.name }}</p>
+							<p class="product-card_price">${{ item.price.toFixed(2) }}</p>
+						</div>
+
+						
+					</div>
+				</div>
+				
+			</div>
+
+			<!-- 購物車 -->
+			<div class="shopping-cart">
+				<!-- 括號裡要放商品購買數量(quantity)的總額 -->
+				<h2 class="shopping-cart_title">Your Cart({{ totalQty }})</h2>
+
+				<!-- 購物清單 -->
+				<!-- 購物車是空的 -->
+				<div v-if="totalQty===0" class="shopping-cart_empty">
+					<img src="https://raw.githubusercontent.com/tina801005/challenge18/3e0dce067d4a713a6b4184e65e9e4a2f7d2260c0/images/illustration-empty-cart.svg" alt="empty-cart">
+					<p>Your added items will appear here</p>
+				</div>
+
+				<!-- 購物車不是空的! -->
+				<div v-else class="shopping-cart_not-empty">
+					<div class="shopping-cart_item">
+						<div v-for="item in cartItems" :key="item.name" class="buy-item">
+							<div class="buy-item_info">
+								<p class="buy-item_name">{{ item.name }}</p>
+								<span class="buy-item_qty"> {{ item.quantity }}x </span>
+								<span class="buy-item_price"> @ ${{ item.price.toFixed(2)}} </span>
+								<span class="buy-item_total-price"> ${{ itemTotal(item) }} </span>
+							</div>
+							
+							<img src="https://raw.githubusercontent.com/tina801005/challenge18/3e0dce067d4a713a6b4184e65e9e4a2f7d2260c0/images/icon-remove-item.svg" alt="remove-item" class="buy-item_remove" @click="remove(item)">
+							<hr>
+						</div>
+						
+						<div class="cart-order">
+							<p class="order-title">Order Total</p>
+							<span class="order_total-price"> ${{ cartTotal.toFixed(2) }} </span>
+						</div>
+						
+					</div>
+					
+					<div class="carbon-neutral">
+						<img src="https://raw.githubusercontent.com/tina801005/challenge18/3e0dce067d4a713a6b4184e65e9e4a2f7d2260c0/images/icon-carbon-neutral.svg" alt="carbon neutral" class="carbon-neutral_icon">
+						<span class="carbon-neutral_text">This is a <b class="carbon-neutral_text-bold">carbon-neutral</b> delivery</span>
+					</div>
+					<button class="confirm" @click="showOrder"> Confirm Order</button>
+				</div>
+
+				
+			</div>
+			<!-- 訂單送出 -->
+			<div v-if="showMask" class="black-mask"></div>
+			<div v-if="showOrderConfire" class="order-confirmed">
+				<div class="order-confirmed_icon">
+					<img src="https://raw.githubusercontent.com/tina801005/challenge18/3e0dce067d4a713a6b4184e65e9e4a2f7d2260c0/images/icon-order-confirmed.svg" alt="order confirmed" >
+				</div>
+				
+				<h2 class="order-confirmed_title">Order Confirmed</h2>
+				<p class="order-confirmed_text">We hope you enjoy your food!</p>
+				<div class="order-confirmed_list">
+					<div class="order-confirmed_item-list" v-for="item in cartItems">
+						<div class="order-item_image">
+							<img v-bind:src="item.image.thumbnail" alt="product image thumbnail" loading="lazy">
+						</div>
+						
+						<div class="order-item_info">
+							<p class="buy-item_name"> {{ item.name }} </p>
+							<span class="buy-item_qty"> {{ item.quantity }}x </span>
+							<span class="buy-item_price"> @<b class="order-item_price-bold"> ${{item.price.toFixed(2)}}</b> </span>
+						</div>
+						<p class="order-item_total-price"> ${{itemTotal(item)}} </p>
+						<hr>
+					</div>
+					<div class="cart-order">
+						<p class="order-title">Order Total</p>
+						<span class="order_total-price">${{ cartTotal.toFixed(2) }}</span>
+					</div>
+					
+				</div>
+				<button class="confirm" @click="startNewOrder">Start New Order</button>
+				
+			</div>	
+
+		</div>
+	</main>
+	
+	<script type="text/javascript" src="./script.js"></script>
+</body>
+</html>
